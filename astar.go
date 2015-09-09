@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+
 type Node struct {
   Facing *Node
   G, H int
@@ -9,8 +10,6 @@ type Node struct {
 func (n Node) F() int {
   return n.G + n.H
 }
-  
-
 
 func main() {
 
