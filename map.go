@@ -1,22 +1,37 @@
 package main
 
-import "github.com/jeffail/gabs"
-import "fmt"
-import "io/ioutil"
-import "log"
+import (
+  "github.com/jeffail/gabs"
+  "fmt"
+  "io/ioutil"
+  "log"
+)
+
+const (
+  TypeStart = iota
+  TypeGoal
+  TypeGround
+  TypeBlock
+)
+var TypeNames = map[int]string{
+  TypeStart: "Start",
+  TypeGoal: "Goal",
+  TypeGround: "Ground",
+  TypeBlock: "Block",
+}
 
 // Two dimensional map, consisting of Tiles
 type Map map[int]map[int]*Tile
 type Tile struct {
   X, Y int
-  M Map
+  Type int
 }
 
-func (m Map) addTile(t *Tile, x, y int) {
-  m[x][y] = t
-  t.X = x
-  t.Y = y
-  t.M = m
+func (m Map) addTile(t *Tile) {
+  if m[t.X] == nil {
+		m[t.X] = map[int]*Tile{}
+	}
+  m[t.X][t.Y] = t
 }
 
 func calcTileCoords(index, mapWidth int) (int, int) {
@@ -25,7 +40,7 @@ func calcTileCoords(index, mapWidth int) (int, int) {
   return x, y
 }
 
-func parseMapFile() string {
+func parseMapFile() Map {
   mapData, err := ioutil.ReadFile("map.json")
   if err != nil {
     log.Fatal(err)
@@ -41,11 +56,16 @@ func parseMapFile() string {
   // Only first layer from Tiled data is used, rest ignored
   firstMapLayer := jsonParsed.Search("layers", "data").Index(0)
   tileTypes, _ := firstMapLayer.Children()
+
+  m := Map{}
   for index, tileType := range tileTypes {
     x, y := calcTileCoords(index, mapWidth)
-      fmt.Println(tileType.Data(), x, y)
+    tile := Tile{x, y, TypeGround}
+    m.addTile(&tile)
+    _ = tileType
   }
-  return "value"
+
+  return m
 }
 
 func parseMapData() {}
@@ -54,7 +74,10 @@ func main() {
 
   parsedMap := parseMapFile()
 
+  for _, row := range parsedMap {
+    for _, tile := range row {
+      fmt.Println(tile.X, tile.Y, TypeNames[tile.Type])
+    }
+  }
 
-  // value == 10.0, ok == true
-  fmt.Println(parsedMap)
 }
