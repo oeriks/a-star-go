@@ -4,6 +4,7 @@ import (
   "github.com/jeffail/gabs"
   "io/ioutil"
   "log"
+  "math"
 )
 
 //These represent the tile order in Tiled sprite
@@ -49,7 +50,7 @@ func calcTileCoords(index, mapWidth int) (int, int) {
   return x, y
 }
 
-func parseMapFile(filePath string) Map {
+func parseMapFile(filePath string) *Map {
   mapData, err := ioutil.ReadFile(filePath)
   if err != nil {
     log.Fatal(err)
@@ -73,25 +74,28 @@ func parseMapFile(filePath string) Map {
     m.addTile(&tile)
   }
 
-  return m
+  return &m
 }
+
 func (t *Tile) getWalkableNeighbours() []*Tile {
   var neighbours []*Tile
+  // Path cannot be diagonal
   for _, offset := range [][]int {
-      {-1, -1},
       {-1, 0},
-      {-1, 1},
       {0, -1},
       {0, 1},
-      {1, -1},
       {1, 0},
-      {1, 1},
     } {
     if t := t.M.getTile(t.X+offset[0], t.Y+offset[1]); t != nil && t.Type == TypeGround {
       neighbours = append(neighbours, t)
     }
   }
   return neighbours
+}
+func (from *Tile) calcDistance(to *Tile) int {
+  xDiff := math.Abs(float64(to.X - from.X))
+  yDiff := math.Abs(float64(to.Y - from.Y))
+  return int(xDiff + yDiff)
 }
 func (m *Map) getStartTile() *Tile {
   return m.findTileOfType(TypeStart)

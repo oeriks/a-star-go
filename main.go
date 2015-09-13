@@ -1,19 +1,15 @@
 package main
 
-import (
-  "fmt"
-)
-
 func main() {
   //parsedMap is a 2 dim map containing Tiles
-  parsedMap := parseMapFile("assets/map.json")
+  worldMap := parseMapFile("assets/map.json")
+  startTile := worldMap.getStartTile()
+  goalTile := worldMap.getGoalTile()
+  if (startTile != nil && goalTile != nil) {
+      astar(startTile, goalTile)
+  }
 
-  tile := parsedMap[0][0]
 
-  neighbours := tile.getWalkableNeighbours()
-  fmt.Println(neighbours[0].Type)
-  fmt.Println(parsedMap.getStartTile())
-  fmt.Println(parsedMap.getGoalTile())
 
   /*
   for _, row := range parsedMap {
