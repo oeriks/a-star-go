@@ -2,17 +2,18 @@ package main
 
 import (
   "github.com/jeffail/gabs"
-  "fmt"
   "io/ioutil"
   "log"
 )
 
+//These represent the tile order in Tiled sprite
 const (
-  TypeStart = iota
-  TypeGoal
-  TypeGround
-  TypeBlock
+  TypeGround = 1
+  TypeGoal = 2
+  TypeStart = 3
+  TypeBlock = 4
 )
+
 var TypeNames = map[int]string{
   TypeStart: "Start",
   TypeGoal: "Goal",
@@ -25,6 +26,7 @@ type Map map[int]map[int]*Tile
 type Tile struct {
   X, Y int
   Type int
+  M Map
 }
 
 func (m Map) addTile(t *Tile) {
@@ -32,6 +34,13 @@ func (m Map) addTile(t *Tile) {
 		m[t.X] = map[int]*Tile{}
 	}
   m[t.X][t.Y] = t
+  t.M = m
+}
+func (m Map) getTile(x, y int) *Tile {
+  if (m[x] != nil) {
+    return m[x][y]
+  }
+  return nil
 }
 
 func calcTileCoords(index, mapWidth int) (int, int) {
@@ -41,7 +50,7 @@ func calcTileCoords(index, mapWidth int) (int, int) {
 }
 
 func parseMapFile() Map {
-  mapData, err := ioutil.ReadFile("map.json")
+  mapData, err := ioutil.ReadFile("assets/map.json")
   if err != nil {
     log.Fatal(err)
   }
@@ -60,15 +69,32 @@ func parseMapFile() Map {
   m := Map{}
   for index, tileType := range tileTypes {
     x, y := calcTileCoords(index, mapWidth)
-    tile := Tile{x, y, TypeGround}
+    tile := Tile{X: x, Y: y, Type: int(tileType.Data().(float64))}
     m.addTile(&tile)
-    _ = tileType
   }
 
   return m
 }
+/*
+func (t *Tile) getWalkableNeighbours() []Tile {
+  neighbours := []Tile{}
+  for _, offset := range [][]int {
+      {-1, -1},
+      {-1, 0},
+      {-1, 1},
+      {0, -1},
+      {0, 1},
+      {1, -1},
+      {1, 0},
+      {1, 1},
+    } {
+    if t := t.M.getTile(t.X+offset[0], t.Y+offset[1]); t != nil && t.Type == TypeGround {
+      neighbours = append(neighbours, t)
+    }
+  }
 
-func parseMapData() {}
+  return neighbours
+}
 
 func main() {
 
@@ -80,4 +106,4 @@ func main() {
     }
   }
 
-}
+}*/
