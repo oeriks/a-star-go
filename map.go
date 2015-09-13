@@ -26,7 +26,7 @@ type Map map[int]map[int]*Tile
 type Tile struct {
   X, Y int
   Type int
-  M Map
+  M *Map
 }
 
 func (m Map) addTile(t *Tile) {
@@ -34,7 +34,7 @@ func (m Map) addTile(t *Tile) {
 		m[t.X] = map[int]*Tile{}
 	}
   m[t.X][t.Y] = t
-  t.M = m
+  t.M = &m
 }
 func (m Map) getTile(x, y int) *Tile {
   if (m[x] != nil) {
@@ -49,8 +49,8 @@ func calcTileCoords(index, mapWidth int) (int, int) {
   return x, y
 }
 
-func parseMapFile() Map {
-  mapData, err := ioutil.ReadFile("assets/map.json")
+func parseMapFile(filePath string) Map {
+  mapData, err := ioutil.ReadFile(filePath)
   if err != nil {
     log.Fatal(err)
   }
@@ -75,9 +75,8 @@ func parseMapFile() Map {
 
   return m
 }
-/*
-func (t *Tile) getWalkableNeighbours() []Tile {
-  neighbours := []Tile{}
+func (t *Tile) getWalkableNeighbours() []*Tile {
+  var neighbours []*Tile
   for _, offset := range [][]int {
       {-1, -1},
       {-1, 0},
@@ -92,18 +91,22 @@ func (t *Tile) getWalkableNeighbours() []Tile {
       neighbours = append(neighbours, t)
     }
   }
-
   return neighbours
 }
+func (m *Map) getStartTile() *Tile {
+  return m.findTileOfType(TypeStart)
+}
+func (m *Map) getGoalTile() *Tile {
+  return m.findTileOfType(TypeGoal)
+}
 
-func main() {
-
-  parsedMap := parseMapFile()
-
-  for _, row := range parsedMap {
+func (m *Map) findTileOfType(tileType int) *Tile {
+  for _, row := range *m {
     for _, tile := range row {
-      fmt.Println(tile.X, tile.Y, TypeNames[tile.Type])
+      if (tile.Type == tileType) {
+        return tile
+      }
     }
   }
-
-}*/
+  return nil
+}
